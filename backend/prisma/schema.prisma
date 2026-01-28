@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELED
+  COMPLETED
+}
+
+enum Role{
+  CLIENT
+  ADMIN
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+  role     Role   @default(CLIENT)
+
+  appointments Appointment[]
+
+  createdAt DateTime @default(now())
+}
+
+model Plan {
+  id       String  @id @default(uuid())
+  name     String
+  duration Int     
+  price    Float
+  active   Boolean @default(true)
+
+  appointments Appointment[]
+
+  createdAt DateTime @default(now())
+}
+
+model Appointment {
+  id String @id @default(uuid())
+
+  date   DateTime
+  status AppointmentStatus @default(PENDING)
+
+  userId String
+  user   User @relation(fields: [userId], references: [id])
+
+  planId String
+  plan   Plan @relation(fields: [planId], references: [id])
+
+  createdAt DateTime @default(now())
+}
