@@ -36,7 +36,7 @@ model Plan {
   name     String
   duration Int     
   price    Float
-  active   Boolean @default(true)
+  isActive   Boolean @default(true)
 
   appointments Appointment[]
 
