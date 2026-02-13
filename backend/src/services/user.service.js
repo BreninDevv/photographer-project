@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma.js";
+import bcrypt from "bcrypt";
 
 class UserService {
   async createUser(data) {
@@ -13,11 +14,12 @@ class UserService {
     if (userExists) {
       throw new Error("Usuário já existe!");
     }
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
       data: {
         name,
         email,
-        password,
+        password: hashedPassword,
       },
     });
     return user;
@@ -59,9 +61,17 @@ class UserService {
         throw new Error("Email já está em uso!");
       }
     }
+    const updateData = {};
+
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+    if (password) {
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+
     return await prisma.user.update({
       where: { id: userId },
-      data: { name, email, password },
+      data: updateData,
     });
   }
   async deleteUserById(userId) {

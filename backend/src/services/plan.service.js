@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma.js";
+import bcrypt from "bcrypt";
 
 class PlanService {
   async createPlan(data) {
@@ -20,6 +21,7 @@ class PlanService {
     if (planExists) {
       throw new Error("Esse plano já existe!");
     }
+
     const plan = await prisma.plan.create({
       data: { name, price, duration, description },
     });
