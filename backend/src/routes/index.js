@@ -8,3 +8,5 @@ const routes = Router();
 routes.use("/auth", authRoutes);
 routes.use("/users", userRoutes);
 routes.use("/plans", planRoutes);
+
+export default routes;
