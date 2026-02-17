@@ -45,9 +45,9 @@ model Plan {
 
 model Appointment {
   id String @id @default(uuid())
-
   date   DateTime
   status AppointmentStatus @default(PENDING)
+  endDate   DateTime
 
   userId String
   user   User @relation(fields: [userId], references: [id])
