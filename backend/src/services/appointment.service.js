@@ -1,5 +1,5 @@
 import { addHours, addMinutes, subMinutes, isBefore } from "date-fns";
-import { prisma } from "../lib/prisma";
+import { prisma } from "../lib/prisma.js";
 
 class AppointmentService {
   async createService({ userId, planId, date }) {
