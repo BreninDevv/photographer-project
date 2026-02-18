@@ -17,4 +17,10 @@ appointmentRoutes.get(
   appointmentController.listAllController,
 );
 
+appointmentRoutes.patch(
+  "/:id/status",
+  roleMiddleware(["ADMIN"]),
+  appointmentController.updateStatusController,
+);
+
 export default appointmentRoutes;

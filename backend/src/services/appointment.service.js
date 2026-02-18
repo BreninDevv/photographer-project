@@ -1,4 +1,4 @@
-import { addHours, isBefore } from "date-fns";
+import { addHours, addMinutes, subMinutes, isBefore } from "date-fns";
 import { prisma } from "../lib/prisma";
 
 class AppointmentService {
@@ -18,19 +18,28 @@ class AppointmentService {
     const startDate = new Date(date);
     const endDate = addHours(startDate, plan.duration);
 
+    const BUFFER_MINUTES = 60;
+    const startWithBuffer = subMinutes(startDate, BUFFER_MINUTES);
+    const endWithBuffer = addMinutes(endDate, BUFFER_MINUTES);
+
     if (isBefore(startDate, new Date())) {
       throw new Error("Não é possível agendar em uma data passada.");
     }
-
     const conflict = await prisma.appointment.findFirst({
       where: {
         status: { not: "CANCELED" },
         OR: [
           {
-            AND: [{ date: { lte: startDate } }, { endDate: { gt: startDate } }],
+            AND: [
+              { date: { lte: startDate } },
+              { endDate: { gt: startWithBuffer } },
+            ],
           },
           {
-            AND: [{ date: { lt: endDate } }, { endDate: { gte: endDate } }],
+            AND: [
+              { date: { lt: endWithBuffer } },
+              { endDate: { gte: endDate } },
+            ],
           },
         ],
       },
@@ -38,7 +47,7 @@ class AppointmentService {
 
     if (conflict) {
       throw new Error(
-        "O fotógrafo já possui um ensaio agendado neste intervalo de tempo.",
+        "Horário indisponível. O fotógrafo precisa de 1 hora de intervalo entre ensaios para deslocamento.",
       );
     }
 
@@ -58,6 +67,25 @@ class AppointmentService {
       },
     });
     return appointment;
+  }
+
+  async updateStatus(id, status) {
+    const validStatuses = ["PENDING", "CONFIRMED", "CANCELED", "COMPLETED"];
+
+    if (!validStatuses.includes(status)) {
+      throw new Error("Status inválido.");
+    }
+
+    const appointment = await prisma.appointment.findUnique({ where: { id } });
+    if (!appointment) {
+      throw new Error("Agendamento não encontrado.");
+    }
+
+    return await prisma.appointment.update({
+      where: { id },
+      data: { status },
+      include: { plan: true, user: { select: { name: true } } },
+    });
   }
 
   async listAll() {

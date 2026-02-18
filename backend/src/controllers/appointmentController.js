@@ -37,6 +37,21 @@ class AppointmentController {
       res.status(400).json({ error: error.message });
     }
   }
+
+  async updateStatusController(req, res) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      const updatedAppoinment = await appointmentService.updateStatus(
+        id,
+        status,
+      );
+      res.status(200).json(updatedAppoinment);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  }
 }
 
 export default new AppointmentController();
